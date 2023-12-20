@@ -2948,6 +2948,20 @@ socks = ["pysocks (>=1.5.6,!=1.5.7,<2.0)"]
 zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
+name = "vadersentiment"
+version = "3.3.2"
+description = "VADER Sentiment Analysis. VADER (Valence Aware Dictionary and sEntiment Reasoner) is a lexicon and rule-based sentiment analysis tool that is specifically attuned to sentiments expressed in social media, and works well on texts from other domains."
+optional = false
+python-versions = "*"
+files = [
+    {file = "vaderSentiment-3.3.2-py2.py3-none-any.whl", hash = "sha256:3bf1d243b98b1afad575b9f22bc2cb1e212b94ff89ca74f8a23a588d024ea311"},
+    {file = "vaderSentiment-3.3.2.tar.gz", hash = "sha256:5d7c06e027fc8b99238edb0d53d970cf97066ef97654009890b83703849632f9"},
+]
+
+[package.dependencies]
+requests = "*"
+
+[[package]]
 name = "wcwidth"
 version = "0.2.12"
 description = "Measures the displayed width of unicode strings in a terminal"
@@ -3014,4 +3028,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "128750e1964f49c42fc5fcc29a7518dff13eb74ad05da80cc1cfd963632ec4dc"
+content-hash = "5c18255e99e64aea6317fc478be2113d71ba43a8517f9f9744db7fe85de704dd"
