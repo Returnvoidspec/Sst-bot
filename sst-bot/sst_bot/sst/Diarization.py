@@ -87,4 +87,11 @@ class Diarization:
 
     def Audio_to_text(self, path):
         result, diarization_result = self.perform_diarization(path)
-        return self.text_diarization_merge(result, diarization_result)
+
+        speaker_labels = set()
+        for segment, _, speaker_label in diarization_result.itertracks(yield_label=True):
+            speaker_labels.add(speaker_label)
+
+        number_of_speakers = len(speaker_labels)
+
+        return self.text_diarization_merge(result, diarization_result), number_of_speakers
