@@ -1,8 +1,8 @@
 #!pip install -q git+https://github.com/openai/whisper.git > /dev/null
-#!pip install -q git+https://github.com/pyannote/pyannote-audio > /dev/null
-#!pip install torchaudio
-#!pip install IPython
-#!pip install pydub webrtcvad
+# !pip install -q git+https://github.com/pyannote/pyannote-audio > /dev/null
+# !pip install torchaudio
+# !pip install IPython
+# !pip install pydub webrtcvad
 
 import whisper
 import datetime
@@ -28,6 +28,7 @@ import re
 import io
 from tqdm import tqdm
 
+
 class Diarization:
     def __init__(self, model_size='large', language='English', auth_token=None):
         self.model_size = model_size
@@ -41,7 +42,8 @@ class Diarization:
             model_name += '.en'
         self.whisper_model = whisper.load_model(model_name)
 
-        self.diarization_pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization-3.1", use_auth_token=self.auth_token)
+        self.diarization_pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization-3.1",
+                                                             use_auth_token=self.auth_token)
         self.diarization_pipeline.to(torch.device("cuda"))
 
     def perform_diarization(self, path):
