@@ -1,5 +1,5 @@
-#!pip install -q git+https://github.com/openai/whisper.git > /dev/null
-# !pip install -q git+https://github.com/pyannote/pyannote-audio > /dev/null
+#!pip install git+https://github.com/openai/whisper.git.com/openai/whisper.git > /dev/null
+#!pip install -q git+https://github.com/pyannote/pyannote-audio > /dev/null
 # !pip install torchaudio
 # !pip install IPython
 # !pip install pydub webrtcvad
@@ -27,6 +27,8 @@ import tempfile
 import re
 import io
 from tqdm import tqdm
+import sys
+import os
 
 
 class Diarization:
@@ -59,6 +61,8 @@ class Diarization:
             - result: The transcription result from the Whisper model. It is a dictionary with keys such as 'segments', each containing information like 'start', 'end', and 'text' for each transcribed segment.
             - diarization_result: The result from the diarization pipeline, which includes information about the different speakers identified in the audio and their respective time segments.
         """
+        print(os.getcwd())
+        print(path)
         result = self.whisper_model.transcribe(path)
         diarization_result = self.diarization_pipeline(path)
         return result, diarization_result
@@ -97,3 +101,8 @@ class Diarization:
         number_of_speakers = len(speaker_labels)
 
         return self.text_diarization_merge(result, diarization_result), number_of_speakers
+
+auth_token = "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"
+diarization = Diarization(auth_token=auth_token)
+text = diarization.Audio_to_text("C:/Users/andy/Desktop/Cours/nlp/nlp3-4/sst-bot/sst_bot/sst/test_conv_short.wav")
+print(text)
