@@ -1,2 +1,11 @@
 pandas
-numpy
+numpy~=1.24.2
+spacy~=3.3.3
+transformers~=4.20.1
+vaderSentiment~=3.3.2
+whisper~=1.1.10
+torch~=1.12.1
+soundfile~=0.12.1
+scikit-learn~=1.2.2
+ipython~=8.10.0
+tqdm~=4.65.0
