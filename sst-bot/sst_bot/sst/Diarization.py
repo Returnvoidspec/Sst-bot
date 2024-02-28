@@ -3,6 +3,8 @@
 # !pip install torchaudio
 # !pip install IPython
 # !pip install pydub webrtcvad
+#!pip install ffmpeg-python
+
 
 import whisper
 import datetime
@@ -29,13 +31,14 @@ import io
 from tqdm import tqdm
 import sys
 import os
-
+import ffmpeg
 
 class Diarization:
     def __init__(self, model_size='large', language='English', auth_token=None):
         self.model_size = model_size
         self.language = language
         self.auth_token = auth_token
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self._load_models()
 
     def _load_models(self):
@@ -46,7 +49,7 @@ class Diarization:
 
         self.diarization_pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization-3.1",
                                                              use_auth_token=self.auth_token)
-        self.diarization_pipeline.to(torch.device("cuda"))
+        self.diarization_pipeline.to(self.device)
 
     def perform_diarization(self, path):
         """
@@ -61,8 +64,14 @@ class Diarization:
             - result: The transcription result from the Whisper model. It is a dictionary with keys such as 'segments', each containing information like 'start', 'end', and 'text' for each transcribed segment.
             - diarization_result: The result from the diarization pipeline, which includes information about the different speakers identified in the audio and their respective time segments.
         """
-        print(os.getcwd())
-        print(path)
+        #print(os.getcwd())
+        #print(path)
+        #if os.path.exists("test_conv_short.wav"):
+        #    print("The file exists.")
+        #else:
+        #    raise ValueError('A very specific bad thing happened.')
+        #from scipy.io import wavfile
+        #print(wavfile.read(path))
         result = self.whisper_model.transcribe(path)
         diarization_result = self.diarization_pipeline(path)
         return result, diarization_result
@@ -102,7 +111,13 @@ class Diarization:
 
         return self.text_diarization_merge(result, diarization_result), number_of_speakers
 
+
+
+
+
+
 auth_token = "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"
 diarization = Diarization(auth_token=auth_token)
-text = diarization.Audio_to_text("C:/Users/andy/Desktop/Cours/nlp/nlp3-4/sst-bot/sst_bot/sst/test_conv_short.wav")
+text = diarization.Audio_to_text("test_conv_short.wav")
 print(text)
+
