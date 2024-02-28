@@ -41,40 +41,41 @@ class TextSummarizer:
     def get_summary(self) -> str:
         return self.summarize_text(self.sst_text)
 
-    def get_relevance_words(self):
-        raw_text = ""
-        nlp = spacy.load("en_core_web_sm")
-        for i in range(self.number_people):
-            pattern = re.compile(rf"SPEAKER_{'0' if i < 10 else ''}{i} :  (.+)")
-            sentences = pattern.findall(self.sst_text)
-            for j in sentences:
-                raw_text += j
 
-        result = set()
-        pos_tag = ['PROPN', 'ADJ', 'NOUN']
-        doc = nlp(raw_text.lower())
-        for token in doc:
-            if token.text in nlp.Defaults.stop_words or token.text in punctuation:
-                continue
-            if token.pos_ in pos_tag:
-                result.add(token.text)
-
-        doc = nlp(self.get_summary().lower())
-        for token in doc:
-            if token.text in nlp.Defaults.stop_words or token.text in punctuation:
-                continue
-            if token.pos_ in pos_tag and token.text not in result:
-                result.add(token.text)
-        return result
+def convert_to_label(compound_score):
+    if compound_score >= 0.05:
+        return 'positive'
+    elif compound_score <= -0.05:
+        return 'negative'
+    else:
+        return 'neutral'
 
 
-def sentiments_analysis(speaker_sentences: [str]):
+def sentiments_analysis(speaker_sentences: [[str]]):
     analyzer = SentimentIntensityAnalyzer()
-    sentiments = []
-    for position, sentence in speaker_sentences:
-        vs = analyzer.polarity_scores(sentence)
-        sentiments[position] = str(vs)
-    return sentiments
+    speakers_compound_scores = []
+    overall_compound_scores = []
+
+    # Iterate over each speaker's sentences
+    for sentences in speaker_sentences:
+        speaker_scores = [analyzer.polarity_scores(sentence)['compound'] for sentence in sentences]
+        speakers_compound_scores.append(speaker_scores)
+        overall_compound_scores.extend(speaker_scores)
+
+    # Calculate average compound score and sentiment label for each speaker
+    speaker_sentiments = []
+    for scores in speakers_compound_scores:
+        if scores:  # Ensure there are scores to average
+            average_score = sum(scores) / len(scores)
+            speaker_sentiments.append(convert_to_label(average_score))
+        else:
+            speaker_sentiments.append('neutral')  # Default to neutral if no sentences
+
+    # Calculate overall sentiment label
+    overall_compound = sum(overall_compound_scores) / len(overall_compound_scores) if overall_compound_scores else 0
+    overall_label = convert_to_label(overall_compound)
+
+    return speaker_sentiments, overall_label
 
 
 class TextSentiment:
@@ -98,9 +99,60 @@ class TextSentiment:
         speaker_sentences = self.get_speaker_sentences()
         return sentiments_analysis(speaker_sentences)
 
-    def count_words_per_speaker(self):
-        sentences = self.get_speaker_sentences()
-        speakers = []
-        for i, j in enumerate(sentences):
-            speakers[i] = len(re.findall(r'\w+', j))
-        return speakers
+
+class TextAnalysis:
+    def __init__(self, sst_text: str, number_people: int = 2):
+        self.sst_text = sst_text
+        self.number_people = number_people
+        self.summarizer = TextSummarizer(sst_text, number_people)
+        self.sentiment = TextSentiment(sst_text, number_people)
+
+    def get_relevance_words(self):
+        # Load the English tokenizer, tagger, parser, NER, and word vectors
+        nlp = spacy.load("en_core_web_sm")
+
+        # Process the text
+        doc = nlp(self.sst_text)
+
+        # Filter tokens which are not stop words, punctuation, and are nouns, proper nouns, or adjectives
+        relevant_words = {token.text.lower() for token in doc if
+                          token.pos_ in ["NOUN", "PROPN", "ADJ"] and not token.is_stop and not token.is_punct}
+
+        return relevant_words
+
+    def get_speaker_relevant_word_counts(self):
+        # Extract relevant words
+        relevant_words = self.get_relevance_words()
+
+        # Get sentences per speaker
+        speaker_sentences = self.sentiment.get_speaker_sentences()
+
+        # Initialize a dictionary to count relevant words per speaker
+        speaker_relevant_word_counts = {f"SPEAKER_{i}": 0 for i in range(self.number_people)}
+
+        # Count relevant words for each speaker
+        for i, sentences in enumerate(speaker_sentences):
+            for sentence in sentences:
+                # Tokenize the sentence and count relevant words
+                words = sentence.lower().split()
+                speaker_relevant_word_counts[f"SPEAKER_{i}"] += sum(word in relevant_words for word in words)
+
+        return speaker_relevant_word_counts
+
+    def analyze_speaker_activity(self, threshold=5):
+        # Get relevant word counts per speaker
+        word_counts = self.get_speaker_relevant_word_counts()
+
+        # Determine activity level based on threshold
+        activity_status = {speaker: "active" if count >= threshold else "not active" for speaker, count in
+                           word_counts.items()}
+
+        return activity_status
+
+
+def count_speakers(sst_text: str) -> int:
+    # Use a regular expression to find all occurrences of speaker identifiers
+    speaker_ids = re.findall(r"SPEAKER_(\d+)", sst_text)
+    # Convert the list of speaker IDs to a set to remove duplicates, then count the elements
+    unique_speakers = set(speaker_ids)
+    return len(unique_speakers)

@@ -1,12 +1,12 @@
-from sst.Diarization import Diarization
-from nlp.infos import TextSentiment, TextSummarizer
+# from sst.Diarization import Diarization
+from nlp.infos import TextSentiment, TextSummarizer, count_speakers, TextAnalysis
 
 
 def analysis():
     """ bot partie return un path avec l'audio 
     bot_to_path()"""
     path = None
-    diarization_mod = Diarization()
+    # diarization_mod = Diarization()
     # sst_text = diarization_mod.Audio_to_text(path)
     sst_text = """SPEAKER_01 :  Hello.
 SPEAKER_00 :  Hi.
@@ -35,15 +35,26 @@ SPEAKER_00 :  Not really. I travel for my job.
 SPEAKER_01 :  Oh, wonderful!
 SPEAKER_01 :  What do you do?
 SPEAKER_00 :  I'm a photographer."""
-
-    summarization_mod = TextSummarizer(sst_text)
+    speakers_number = count_speakers(sst_text)
+    print("lol")
+    summarization_mod = TextSummarizer(sst_text,speakers_number)
     summary = summarization_mod.get_summary()
 
-    sentimentalize_mod = TextSentiment(sst_text)
-    print(sentimentalize_mod.get_sentiments())
+    sentimentalize_mod = TextSentiment(sst_text,speakers_number)
+    speaker_sentiments, overall_sentiment = sentimentalize_mod.get_sentiments()
+    print("Speaker Sentiments:", speaker_sentiments)
+    print("Overall Sentiment:", overall_sentiment)
     print(summary)
-    print(sst_text)
+
+    analysis_mod = TextAnalysis(sst_text, speakers_number)  # Assuming 2 speakers in the conversation
+    activity_status = analysis_mod.analyze_speaker_activity()
+    print("Speaker Activity Status:", activity_status)
 
 
 def main():
+    print("lol1")
     analysis()
+
+
+if __name__ == '__main__':
+    main()
