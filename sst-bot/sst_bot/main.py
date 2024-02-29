@@ -36,23 +36,24 @@ SPEAKER_01 :  Oh, wonderful!
 SPEAKER_01 :  What do you do?
 SPEAKER_00 :  I'm a photographer."""
     speakers_number = count_speakers(sst_text)
-    print("lol")
-    summarization_mod = TextSummarizer(sst_text,speakers_number)
-    summary = summarization_mod.get_summary()
-
-    sentimentalize_mod = TextSentiment(sst_text,speakers_number)
-    speaker_sentiments, overall_sentiment = sentimentalize_mod.get_sentiments()
-    print("Speaker Sentiments:", speaker_sentiments)
-    print("Overall Sentiment:", overall_sentiment)
-    print(summary)
+    # summarization_mod = TextSummarizer(sst_text,speakers_number)
+    # summary = summarization_mod.get_summary()
+    #
+    # sentimentalize_mod = TextSentiment(sst_text,speakers_number)
+    # speaker_sentiments, overall_sentiment = sentimentalize_mod.get_sentiments()
+    # print("Speaker Sentiments:", speaker_sentiments)
+    # print("Overall Sentiment:", overall_sentiment)
+    # print(summary)
 
     analysis_mod = TextAnalysis(sst_text, speakers_number)  # Assuming 2 speakers in the conversation
     activity_status = analysis_mod.analyze_speaker_activity()
     print("Speaker Activity Status:", activity_status)
 
+    print("\nExtracted Topics:")
+    analysis_mod.get_topics()
+
 
 def main():
-    print("lol1")
     analysis()
 
 

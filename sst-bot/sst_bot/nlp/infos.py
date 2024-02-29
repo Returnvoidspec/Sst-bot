@@ -4,6 +4,11 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import spacy
 from collections import Counter
 from string import punctuation
+from gensim.corpora import Dictionary
+from gensim.models import LdaModel
+from gensim.parsing.preprocessing import STOPWORDS
+from gensim.utils import simple_preprocess
+import spacy
 
 
 class TextSummarizer:
@@ -148,6 +153,61 @@ class TextAnalysis:
                            word_counts.items()}
 
         return activity_status
+
+    def preprocess_text(self):
+        cleaned_text = re.sub(r"SPEAKER_\d+\s*:", "", self.sst_text)
+        nlp = spacy.load("en_core_web_sm")
+        doc = nlp(cleaned_text.lower())
+        lemmatized_text = " ".join([token.lemma_ for token in doc if not token.is_stop and not token.is_punct])
+        return lemmatized_text
+
+    def get_topics(self, num_words=1):
+        """
+        Perform topic modeling on the meeting text and print out the main topics.
+        """
+        cleaned_text = self.preprocess_text()
+        word_count = len(cleaned_text.split())
+
+        # Adjust the number of topics based on the word count
+        if word_count < 500:
+            num_topics = 1  # Fewer topics for shorter texts
+        elif 500 <= word_count < 1000:
+            num_topics = 3
+        else:
+            num_topics = 5  # More topics for longer texts
+
+        # Load English tokenizer, tagger, parser, NER, and word vectors
+        nlp = spacy.load("en_core_web_sm")
+        doc = nlp(cleaned_text.lower())
+
+        texts = [[word for word in simple_preprocess(str(sent.text)) if word not in STOPWORDS] for sent in doc.sents if
+                 len(sent.text.strip()) > 0]
+        if not texts:
+            print("No data available for LDA after preprocessing.")
+            return
+
+        dictionary = Dictionary(texts)
+        dictionary.filter_extremes(no_below=2, no_above=0.5)
+        corpus = [dictionary.doc2bow(text) for text in texts]
+
+        if not corpus:
+            print("No data available in the corpus for LDA.")
+            return
+
+        # Train the LDA model
+        lda_model = LdaModel(corpus=corpus,
+                             id2word=dictionary,
+                             num_topics=num_topics,
+                             random_state=100,
+                             update_every=1,
+                             chunksize=100,
+                             passes=10,
+                             alpha='auto',
+                             per_word_topics=True)
+
+        topics = lda_model.show_topics(num_topics=num_topics, num_words=num_words, formatted=False)
+        for topic_num, topic_terms in topics:
+            print(f"Topic {topic_num + 1}: ", ", ".join([word for word, _ in topic_terms]))
 
 
 def count_speakers(sst_text: str) -> int:
