@@ -7,34 +7,12 @@
 
 
 import whisper
-import datetime
-import subprocess
 import torch
-import pyannote.audio
-from pyannote.audio.pipelines.speaker_verification import PretrainedSpeakerEmbedding
-from pyannote.audio import Audio
-from pyannote.core import Segment
-import wave
-import contextlib
-from sklearn.cluster import AgglomerativeClustering
-from sklearn.metrics import silhouette_score
-import numpy as np
-import torch
-import torchaudio
-from IPython.display import Audio as Aud
-from huggingface_hub import hf_hub_download
 from pyannote.audio import Pipeline
-import soundfile as sf
-import tempfile
-import re
-import io
-from tqdm import tqdm
-import sys
-import os
-import ffmpeg
+
 
 class Diarization:
-    def __init__(self, model_size='large', language='English', auth_token=None):
+    def __init__(self, model_size='large', language='English', auth_token = "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"):
         self.model_size = model_size
         self.language = language
         self.auth_token = auth_token
@@ -64,14 +42,6 @@ class Diarization:
             - result: The transcription result from the Whisper model. It is a dictionary with keys such as 'segments', each containing information like 'start', 'end', and 'text' for each transcribed segment.
             - diarization_result: The result from the diarization pipeline, which includes information about the different speakers identified in the audio and their respective time segments.
         """
-        #print(os.getcwd())
-        #print(path)
-        #if os.path.exists("test_conv_short.wav"):
-        #    print("The file exists.")
-        #else:
-        #    raise ValueError('A very specific bad thing happened.')
-        #from scipy.io import wavfile
-        #print(wavfile.read(path))
         result = self.whisper_model.transcribe(path)
         diarization_result = self.diarization_pipeline(path)
         return result, diarization_result
@@ -110,14 +80,4 @@ class Diarization:
         number_of_speakers = len(speaker_labels)
 
         return self.text_diarization_merge(result, diarization_result), number_of_speakers
-
-
-
-
-
-
-auth_token = "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"
-diarization = Diarization(auth_token=auth_token)
-text = diarization.Audio_to_text("test_conv_short.wav")
-print(text)
 

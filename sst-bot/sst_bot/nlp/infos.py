@@ -1,9 +1,6 @@
 from transformers import BartTokenizer, BartForConditionalGeneration
 import re
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-import spacy
-from collections import Counter
-from string import punctuation
 from gensim.corpora import Dictionary
 from gensim.models import LdaModel
 from gensim.parsing.preprocessing import STOPWORDS
@@ -126,29 +123,22 @@ class TextAnalysis:
         return relevant_words
 
     def get_speaker_relevant_word_counts(self):
-        # Extract relevant words
         relevant_words = self.get_relevance_words()
 
-        # Get sentences per speaker
         speaker_sentences = self.sentiment.get_speaker_sentences()
 
-        # Initialize a dictionary to count relevant words per speaker
         speaker_relevant_word_counts = {f"SPEAKER_{i}": 0 for i in range(self.number_people)}
 
-        # Count relevant words for each speaker
         for i, sentences in enumerate(speaker_sentences):
             for sentence in sentences:
-                # Tokenize the sentence and count relevant words
                 words = sentence.lower().split()
                 speaker_relevant_word_counts[f"SPEAKER_{i}"] += sum(word in relevant_words for word in words)
 
         return speaker_relevant_word_counts
 
     def analyze_speaker_activity(self, threshold=5):
-        # Get relevant word counts per speaker
         word_counts = self.get_speaker_relevant_word_counts()
 
-        # Determine activity level based on threshold
         activity_status = {speaker: "active" if count >= threshold else "not active" for speaker, count in
                            word_counts.items()}
 
@@ -168,15 +158,15 @@ class TextAnalysis:
         cleaned_text = self.preprocess_text()
         word_count = len(cleaned_text.split())
 
-        # Adjust the number of topics based on the word count
+
         if word_count < 500:
-            num_topics = 1  # Fewer topics for shorter texts
+            num_topics = 1
         elif 500 <= word_count < 1000:
             num_topics = 3
         else:
-            num_topics = 5  # More topics for longer texts
+            num_topics = 5
 
-        # Load English tokenizer, tagger, parser, NER, and word vectors
+
         nlp = spacy.load("en_core_web_sm")
         doc = nlp(cleaned_text.lower())
 
@@ -209,10 +199,3 @@ class TextAnalysis:
         for topic_num, topic_terms in topics:
             print(f"Topic {topic_num + 1}: ", ", ".join([word for word, _ in topic_terms]))
 
-
-def count_speakers(sst_text: str) -> int:
-    # Use a regular expression to find all occurrences of speaker identifiers
-    speaker_ids = re.findall(r"SPEAKER_(\d+)", sst_text)
-    # Convert the list of speaker IDs to a set to remove duplicates, then count the elements
-    unique_speakers = set(speaker_ids)
-    return len(unique_speakers)
