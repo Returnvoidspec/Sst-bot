@@ -2,8 +2,7 @@ from sst.Diarization import Diarization
 from nlp.infos import TextSentiment, TextSummarizer, TextAnalysis
 
 
-def analysis():
-    path = "test_conv_short.wav"
+def analysis(path = "test_conv_short.wav"):
     diarization_mod = Diarization()
     sst_text, speakers_number = diarization_mod.Audio_to_text(path)
 
@@ -26,7 +25,8 @@ def analysis():
 
 
 def main():
-    analysis()
+    path = input("Please enter the path to the audio file: ")
+    analysis(path)
 
 
 if __name__ == '__main__':
