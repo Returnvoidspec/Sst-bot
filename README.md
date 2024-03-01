@@ -14,7 +14,7 @@ Download the FFmpeg application from this link: https://ffmpeg.org/download.html
 
 ## Running the Project
 
-To run the project, simply execute the main script and provide the path to your .wav audio file:
+To run the project, simply execute the main script inside a poetry shell andand provide the path to your .wav audio file:
 
 python main.py path/to/your/audio.wav
 
