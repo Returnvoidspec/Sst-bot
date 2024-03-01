@@ -1,4 +1,4 @@
-Welcome to Our NLP Meetbot Project
+# Welcome to Our NLP Meetbot Project
 
 Welcome to the NLP Meetbot project repository. Here, you'll find all the code for our project. Follow these instructions to test our methods effectively.
 
